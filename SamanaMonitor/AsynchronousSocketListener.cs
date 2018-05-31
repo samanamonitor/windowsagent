@@ -74,9 +74,10 @@ public class AsynchronousSocketListener
             X509Certificate2Collection certCollection = store.Certificates;
             // If using a certificate with a trusted root you do not need to FindByTimeValid, instead:
             // currentCerts.Find(X509FindType.FindBySubjectDistinguishedName, certName, true);
-            X509Certificate2Collection currentCerts = certCollection.Find(X509FindType.FindByTimeValid, DateTime.Now, false);
-            X509Certificate2Collection signingCert = currentCerts.Find(X509FindType.FindBySubjectName, certName, false);
-            if(signingCert.Count > 0)
+            //X509Certificate2Collection currentCerts = certCollection.Find(X509FindType.FindByTimeValid, DateTime.Now, false);
+            //X509Certificate2Collection signingCert = currentCerts.Find(X509FindType.FindBySubjectName, certName, false);
+            X509Certificate2Collection signingCert = certCollection.Find(X509FindType.FindBySubjectName, certName, false);
+            if (signingCert.Count > 0)
                 serverCertificate = signingCert[0];
             // Return the first certificate in the collection, has the right name and is current.
         }
