@@ -187,7 +187,6 @@ public class AsynchronousSocketListener
                 {
                     // This server should never receive more than 1024 bytes of data
                     // in the header + body
-                    SSLSend(state, new HTTPResponse(400, null).ToString());
                     throw new Exception("Content of request is larger than 1024. Stopping request.");
                 }
 
@@ -228,20 +227,21 @@ public class AsynchronousSocketListener
                         {
                             // Body expected. Extract into b and validate if 
                             // length is the same as content-length header
-                            string b = content.Substring(end_of_header + (winlf ? 4 : 2), (int)req.content_length);
-                            if (b.Length == req.content_length)
+                            string b = content.Substring(end_of_header + (winlf ? 4 : 2));
+
+                            if(b.Length < req.content_length)
                             {
-                                req.body = b;
-                                SSLSend(state, sd.get(req));
-                            }
-                            else
-                            {
-                                
                                 state.sb.Length = 0;
                                 state.sb.Capacity = 0;
                                 state.sb.Append(b);
-                                stream.BeginRead(state.buffer, 0, StateObject.BufferSize, 
+                                stream.BeginRead(state.buffer, 0, StateObject.BufferSize,
                                     new AsyncCallback(SSLReadCallback), state);
+                            }
+                            else
+                            {
+                                b = b.Substring(0, (int)req.content_length);
+                                req.body = b;
+                                SSLSend(state, sd.get(req));
                             }
                         }
                         else
@@ -261,8 +261,9 @@ public class AsynchronousSocketListener
         catch (Exception e)
         {
             log.error(e.Message + "\r\n" + e.StackTrace, 10);
-            return;
+            SSLSend(state, new HTTPResponse(400, null).ToString());
         }
+        return;
     }
 
     private void SSLSend(StateObject state, string data)
