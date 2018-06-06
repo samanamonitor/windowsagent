@@ -14,7 +14,7 @@ namespace SamanaMonitor
         public SamanaException(int s, string b)
         {
             status = s;
-            body = "<HTML><HEAD><TITLE>" + b + "</TITLE></HEAD><BODY><H1>" + b + "</H1</BODY></HTML>";
+            body = "<HTML><HEAD><TITLE>" + b + "</TITLE></HEAD><BODY><H1>" + b + "</H1></BODY></HTML>";
         }
     }
 
@@ -80,11 +80,15 @@ namespace SamanaMonitor
         private HDList hdlist;
         private JSONItemList log;
         private SessionList sessions;
+        private string version;
 
         private ServerDataConfig config;
 
         public ServerData(ServerDataConfig s)
         {
+            System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
+            FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
+            version = fvi.FileVersion;
             Tick = 0;
             evtlog = new Logging("Samana Service Data", 0);
             ComputerInfo c = new ComputerInfo();
@@ -255,6 +259,11 @@ namespace SamanaMonitor
                 {
                     sessions.Poll();
                     body = sessions.json();
+                    status = 200;
+                }
+                else if(path == "/version")
+                {
+                    body = "\"" + this.version + "\"";
                     status = 200;
                 }
                 else
