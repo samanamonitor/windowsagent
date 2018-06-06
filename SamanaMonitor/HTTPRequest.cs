@@ -9,11 +9,13 @@ class Header
     public Header(string data)
     {
         int separator = data.IndexOf(':');
-        if(separator > 1)
-        {
-            name = data.Substring(0, separator).ToLower();
+        if (separator < 2) throw new Exception("Invalid Header");
+
+        name = data.Substring(0, separator).ToLower();
+        if (data.Length > separator + 2)
             value = data.Substring(separator + 2);
-        }
+        else
+            value = "";
     }
 
     public Header(string n, string v)
@@ -52,12 +54,18 @@ public class HTTPRequest
         expect_body = false;
         content_length = 0;
         char[] line_separator = { '\n' };
+
         lines = data.Split(line_separator);
+        if (lines.Length < 2) throw new Exception("Invalid Request: \n" + data);
+
         string[] l0;
         l0 = lines[0].Split(new char[] { ' ' });
+        if (l0.Length != 3) throw new Exception("Invalid Request: \n" + data);
         if(l0.Length >= 0) method = l0[0];
         if(l0.Length > 0) url = l0[1];
         if(l0.Length > 1) version = l0[2];
+        if (method != "GET" && method != "POST") throw new Exception("Invalid Method: " + data);
+
         body = "";
         headers = new List<Header>();
 
